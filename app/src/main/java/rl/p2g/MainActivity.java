@@ -8,27 +8,26 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
 import android.os.Build;
 import android.os.Bundle;
-import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     private final int BASIC_PERMISSIONS = 0;
     private final Lazy ii = new Lazy(this);
-    private final BedFragment bedFragment = new BedFragment(this);
-    private FragmentTransaction fragmentTransaction;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         grantBasicPermissions();
 
-        fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.replace(R.id.container, bedFragment);
-        fragmentTransaction.commit();
+        fragment(new HomeFragment(this));
     }
 
     private void grantBasicPermissions() {
@@ -60,10 +59,22 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == BASIC_PERMISSIONS) {
             if (grantResults[0] == PERMISSION_GRANTED) {
                 // granted
+                fragment(new HomeFragment(this));
             } else {
                 // denied
                 ii.dd("Insufficient Access Rights", "P2G Gallery requires the permissions you denied.", (dialog, which) -> finish());
             }
         }
+    }
+
+    public void fragment(Fragment fragment) {
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.add(R.id.container, fragment);
+
+        List<Fragment> list = getSupportFragmentManager().getFragments();
+        if (!list.isEmpty())
+            ft.hide(list.get(list.size() - 1));
+
+        ft.commit();
     }
 }
