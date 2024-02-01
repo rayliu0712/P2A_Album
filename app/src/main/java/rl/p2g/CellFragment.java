@@ -1,7 +1,5 @@
 package rl.p2g;
 
-import static rl.p2g.Lazybones.*;
-
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,39 +7,46 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-public class GalleryFragment extends Fragment {
+public class CellFragment extends Fragment {
+
+    private GridView gv;
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        GridView gv = view.findViewById(R.id.gv);
-        gv.setAdapter(new ArrayAdapter<GS>(cc(), R.layout.gallery_item, cc().gsList) {
+        gv = view.findViewById(R.id.gv);
+        gv.setOnItemClickListener((parent, v, i, id) -> {
+            cc().bedFragment.refresh(i);
+            cc().switchDisplayedFragment(cc().bedFragment, true);
+        });
+        setAdapter();
+    }
+
+    private void setAdapter() {
+        gv.setAdapter(new ArrayAdapter<PS>(cc(), R.layout.cell_item, cc().currentList) {
             @NonNull
             @Override
             public View getView(int i, @Nullable View convertView, @NonNull ViewGroup parent) {
                 if (convertView == null)
-                    convertView = getLayoutInflater().inflate(R.layout.gallery_item, parent, false);
+                    convertView = getLayoutInflater().inflate(R.layout.cell_item, parent, false);
 
-                ((TextView) convertView.findViewById(R.id.tv))
-                        .setText(cc().getGS(i).galleryName);
-
-                ((ImageView) convertView.findViewById(R.id.iv))
-                        .setImageBitmap(cc().getGS(i).psList.get(0).bitmap);
-
+                ImageView convertIV = convertView.findViewById(R.id.iv);
+                convertIV.setImageBitmap(cc().currentList.get(i).bitmap);
                 return convertView;
             }
         });
-        gv.setOnItemClickListener((parent, view1, i, id) -> {
-            cc().cellFragment.refresh(i);
-            cc().switchDisplayedFragment(cc().cellFragment, true);
-        });
+    }
+
+    // call it before switch to this fragment
+    public void refresh(int i) {
+        cc().setCurrentList(i);
+        setAdapter();
     }
 
 
@@ -49,7 +54,7 @@ public class GalleryFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.gallery, container, false);
+        return inflater.inflate(R.layout.cell, container, false);
     }
 
     private MainActivity cc() {
