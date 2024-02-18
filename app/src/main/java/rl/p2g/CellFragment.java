@@ -21,15 +21,14 @@ public class CellFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         gv = view.findViewById(R.id.gv);
-        gv.setOnItemClickListener((parent, v, i, id) -> {
-            cc().bedFragment.refresh(i);
-            cc().switchDisplayedFragment(cc().bedFragment, true);
+        gv.setOnItemClickListener((parent, view1, i, id) -> {
+            cc().switchDisplayedFragment(cc().BED_FRAGMENT, i, true);
         });
         setAdapter();
     }
 
-    private void setAdapter() {
-        gv.setAdapter(new ArrayAdapter<PS>(cc(), R.layout.cell_item, cc().currentList) {
+    public void setAdapter() {
+        gv.setAdapter(new ArrayAdapter<PS>(cc(), R.layout.cell_item, cc().getCurList()) {
             @NonNull
             @Override
             public View getView(int i, @Nullable View convertView, @NonNull ViewGroup parent) {
@@ -37,16 +36,10 @@ public class CellFragment extends Fragment {
                     convertView = getLayoutInflater().inflate(R.layout.cell_item, parent, false);
 
                 ImageView convertIV = convertView.findViewById(R.id.iv);
-                convertIV.setImageBitmap(cc().currentList.get(i).bitmap);
+                convertIV.setImageBitmap(cc().getCurPS(i).bitmap);
                 return convertView;
             }
         });
-    }
-
-    // call it before switch to this fragment
-    public void refresh(int i) {
-        cc().setCurrentList(i);
-        setAdapter();
     }
 
 

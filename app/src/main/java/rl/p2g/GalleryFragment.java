@@ -1,7 +1,5 @@
 package rl.p2g;
 
-import static rl.p2g.Lazybones.*;
-
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,7 +20,7 @@ public class GalleryFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         GridView gv = view.findViewById(R.id.gv);
-        gv.setAdapter(new ArrayAdapter<GS>(cc(), R.layout.gallery_item, cc().gsList) {
+        gv.setAdapter(new ArrayAdapter<GS>(cc(), R.layout.gallery_item, cc().getGalleriesList()) {
             @NonNull
             @Override
             public View getView(int i, @Nullable View convertView, @NonNull ViewGroup parent) {
@@ -39,8 +37,7 @@ public class GalleryFragment extends Fragment {
             }
         });
         gv.setOnItemClickListener((parent, view1, i, id) -> {
-            cc().cellFragment.refresh(i);
-            cc().switchDisplayedFragment(cc().cellFragment, true);
+            cc().switchDisplayedFragment(cc().CELL_FRAGMENT, i, true);
         });
     }
 
