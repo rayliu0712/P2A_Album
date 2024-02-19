@@ -41,6 +41,7 @@ public class Database {
                         "date_added ASC");  // ascending order
 
                 int k = 0;
+                cc.pb.setMax(cursor.getCount());
                 if (cursor.moveToFirst()) {
                     do {
                         String date = cursor.getString(cursor.getColumnIndexOrThrow("date_added"));
@@ -60,7 +61,9 @@ public class Database {
 
                         k++;
 
+                        int finalK = k;
                         handler.post(() -> {
+                            cc.pb.setProgress(finalK);
                         });
 
                     } while (cursor.moveToNext());

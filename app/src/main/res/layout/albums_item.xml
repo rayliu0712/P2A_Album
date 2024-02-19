@@ -11,7 +11,7 @@
         android:layout_weight="1">
 
         <ImageView
-            android:id="@+id/iv"
+            android:id="@+id/small_iv"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:scaleType="centerCrop"

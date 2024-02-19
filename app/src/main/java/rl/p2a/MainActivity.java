@@ -6,19 +6,22 @@ import static android.Manifest.permission.READ_MEDIA_VIDEO;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentTransaction;
 
-import rl.p2a.fragment.AlbumFragment;
+import rl.p2a.fragment.AlbumsFragment;
 import rl.p2a.fragment.BedFragment;
-import rl.p2a.fragment.CellFragment;
+import rl.p2a.fragment.CellsFragment;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -28,17 +31,42 @@ public class MainActivity extends AppCompatActivity {
     public static final int BED_FRAGMENT = 2;
     private final int BASIC_PERMISSIONS = 0;
 
-    private final CellFragment cellFragment = new CellFragment();
+    private final CellsFragment cellsFragment = new CellsFragment();
     private final BedFragment bedFragment = new BedFragment();
-    private final AlbumFragment albumFragment = new AlbumFragment();
+    private final AlbumsFragment albumsFragment = new AlbumsFragment();
+
+    public ProgressBar pb;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        findViewById(R.id.album).setOnClickListener(v -> {
-            switchDisplayedFragment(AlBUM_FRAGMENT, 0, false);
+        ImageView photosIV = findViewById(R.id.photos);
+        ImageView albumsIV = findViewById(R.id.albums);
+        ImageView moreIV = findViewById(R.id.more);
+        TextView moreTV = findViewById(R.id.more_t);
+        pb = findViewById(R.id.pb);
+
+        findViewById(R.id.bar1).setOnClickListener(v -> {
+            photosIV.setImageDrawable(getDrawableFromResource(R.drawable.photo_outlined));
+            albumsIV.setImageDrawable(getDrawableFromResource(R.drawable.album_filled));
+            moreIV.setImageDrawable(getDrawableFromResource(R.drawable.more_white));
+            moreTV.setTextColor(getColor(R.color.white));
+        });
+
+        findViewById(R.id.bar2).setOnClickListener(v -> {
+            photosIV.setImageDrawable(getDrawableFromResource(R.drawable.photo_filled));
+            albumsIV.setImageDrawable(getDrawableFromResource(R.drawable.album_outlined));
+            moreIV.setImageDrawable(getDrawableFromResource(R.drawable.more_white));
+            moreTV.setTextColor(getColor(R.color.white));
+        });
+
+        findViewById(R.id.bar3).setOnClickListener(v -> {
+            photosIV.setImageDrawable(getDrawableFromResource(R.drawable.photo_filled));
+            albumsIV.setImageDrawable(getDrawableFromResource(R.drawable.album_filled));
+            moreIV.setImageDrawable(getDrawableFromResource(R.drawable.more_blue));
+            moreTV.setTextColor(getColor(R.color.blue));
         });
 
         if (checkOrGrantBasicPermissions())
@@ -91,24 +119,24 @@ public class MainActivity extends AppCompatActivity {
 
         switch (nextFragment) {
             case INIT:
-                ft.add(R.id.container, cellFragment)
+                ft.add(R.id.container, cellsFragment)
                         .add(R.id.container, bedFragment)
-                        .add(R.id.container, albumFragment);
+                        .add(R.id.container, albumsFragment);
 
-                ft.show(cellFragment)
-                        .hide(albumFragment).hide(bedFragment);
+                ft.show(cellsFragment)
+                        .hide(albumsFragment).hide(bedFragment);
 
                 ft.commit();
                 return;
 
             case CELL_FRAGMENT:
                 Database.iAlbum = nextMediaOrAlbumIndex;
-                cellFragment.setAdapter();
-                ft.show(cellFragment);
+//                cellsFragment.setAdapter();
+                ft.show(cellsFragment);
                 break;
 
             case AlBUM_FRAGMENT:
-                ft.show(albumFragment);
+                ft.show(albumsFragment);
                 break;
 
             case BED_FRAGMENT:
@@ -122,12 +150,12 @@ public class MainActivity extends AppCompatActivity {
         if (addToBackStack)
             ft.addToBackStack(null);
 
-        if (cellFragment.isVisible())
-            ft.hide(cellFragment);
+        if (cellsFragment.isVisible())
+            ft.hide(cellsFragment);
         else if (bedFragment.isVisible())
             ft.hide(bedFragment);
-        else if (albumFragment.isVisible())
-            ft.hide(albumFragment);
+        else if (albumsFragment.isVisible())
+            ft.hide(albumsFragment);
 
         ft.commit();
     }
@@ -156,5 +184,9 @@ public class MainActivity extends AppCompatActivity {
 
     public void showBar() {
         findViewById(R.id.bar).setVisibility(View.VISIBLE);
+    }
+
+    public Drawable getDrawableFromResource(int id) {
+        return getResources().getDrawable(id);
     }
 }
