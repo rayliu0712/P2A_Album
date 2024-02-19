@@ -19,23 +19,29 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <ImageView
-            android:id="@+id/cell"
+        <!--        <ImageView-->
+        <!--            android:id="@+id/cell"-->
+        <!--            android:layout_width="0dp"-->
+        <!--            android:layout_height="wrap_content"-->
+        <!--            android:layout_weight="1"-->
+        <!--            android:padding="30dp"-->
+        <!--            android:scaleType="centerCrop"-->
+        <!--            android:src="@drawable/cell" />-->
+
+        <TextView
+            android:id="@+id/pb"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:padding="30dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/cell" />
+            android:layout_weight="1" />
 
         <ImageView
-            android:id="@+id/gallery"
+            android:id="@+id/album"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:padding="30dp"
             android:scaleType="centerCrop"
-            android:src="@drawable/gallery" />
+            android:src="@drawable/album" />
 
         <ImageView
             android:id="@+id/more"

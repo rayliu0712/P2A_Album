@@ -13,6 +13,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "P2G Gallery"
+rootProject.name = "P2A Album"
 include(":app")
  

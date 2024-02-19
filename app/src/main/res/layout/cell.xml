@@ -3,11 +3,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     tools:context=".CellFragment">
 
-    <GridView
-        android:id="@+id/gv"
+    <androidx.recyclerview.widget.RecyclerView
+        app:spanCount="4"
+        android:id="@+id/rv"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"

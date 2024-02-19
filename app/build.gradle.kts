@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace = "rl.p2g"
+    namespace = "rl.p2a"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "rl.p2g"
+        applicationId = "rl.p2a"
         minSdk = 28
         targetSdk = 34
         versionCode = 1
