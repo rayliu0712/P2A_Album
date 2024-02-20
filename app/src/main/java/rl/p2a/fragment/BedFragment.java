@@ -86,15 +86,10 @@ public class BedFragment extends Fragment {
                     public boolean onScale(@NonNull ScaleGestureDetector detector) {
                         scaleFactor *= detector.getScaleFactor();  // 無上限和下限
 
-                        if (detector.getCurrentSpanY() > 0)  // wired
-                            iv.setRotation(iv.getRotation() - 1);
-                        else
-                            iv.setRotation(iv.getRotation() + 1);
-
                         iv.setScaleX(scaleFactor);
                         iv.setScaleY(scaleFactor);
 
-                        return true;
+                        return true;  // return false會造成縮放暴衝
                     }
                 });
 

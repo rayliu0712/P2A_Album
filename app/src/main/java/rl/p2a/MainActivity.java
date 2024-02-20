@@ -26,8 +26,8 @@ import rl.p2a.fragment.CellsFragment;
 public class MainActivity extends AppCompatActivity {
 
     public static final int INIT = -1;
-    public static final int CELL_FRAGMENT = 0;
-    public static final int AlBUM_FRAGMENT = 1;
+    public static final int CELLS_FRAGMENT = 0;
+    public static final int AlBUMS_FRAGMENT = 1;
     public static final int BED_FRAGMENT = 2;
     private final int BASIC_PERMISSIONS = 0;
 
@@ -53,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
             albumsIV.setImageDrawable(getDrawableFromResource(R.drawable.album_filled));
             moreIV.setImageDrawable(getDrawableFromResource(R.drawable.more_white));
             moreTV.setTextColor(getColor(R.color.white));
+            switchDisplayedFragment(CELLS_FRAGMENT, -1, false);
         });
 
         findViewById(R.id.bar2).setOnClickListener(v -> {
@@ -60,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
             albumsIV.setImageDrawable(getDrawableFromResource(R.drawable.album_outlined));
             moreIV.setImageDrawable(getDrawableFromResource(R.drawable.more_white));
             moreTV.setTextColor(getColor(R.color.white));
+            switchDisplayedFragment(AlBUMS_FRAGMENT, -1, false);
         });
 
         findViewById(R.id.bar3).setOnClickListener(v -> {
@@ -129,13 +131,13 @@ public class MainActivity extends AppCompatActivity {
                 ft.commit();
                 return;
 
-            case CELL_FRAGMENT:
+            case CELLS_FRAGMENT:
                 Database.iAlbum = nextMediaOrAlbumIndex;
-//                cellsFragment.setAdapter();
+                cellsFragment.setAdapter();  // 應該先switch fragment再async load
                 ft.show(cellsFragment);
                 break;
 
-            case AlBUM_FRAGMENT:
+            case AlBUMS_FRAGMENT:
                 ft.show(albumsFragment);
                 break;
 
@@ -150,11 +152,11 @@ public class MainActivity extends AppCompatActivity {
         if (addToBackStack)
             ft.addToBackStack(null);
 
-        if (cellsFragment.isVisible())
+        if (cellsFragment.isVisible() && nextFragment != CELLS_FRAGMENT)
             ft.hide(cellsFragment);
-        else if (bedFragment.isVisible())
+        else if (bedFragment.isVisible() && nextFragment != BED_FRAGMENT)
             ft.hide(bedFragment);
-        else if (albumsFragment.isVisible())
+        else if (albumsFragment.isVisible() && nextFragment != AlBUMS_FRAGMENT)
             ft.hide(albumsFragment);
 
         ft.commit();

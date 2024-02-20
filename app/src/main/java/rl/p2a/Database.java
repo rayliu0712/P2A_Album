@@ -4,6 +4,8 @@ import android.app.AlertDialog;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Handler;
 import android.provider.MediaStore.Images;
@@ -51,13 +53,13 @@ public class Database {
                         long id = Long.parseLong(cursor.getString(cursor.getColumnIndexOrThrow("_id")));
                         Uri uri = Uri.parse(externalContentUri + "/" + id);
 
-                        Bitmap thumbnailBitmap;
+                        Drawable thumbnailDrawable;
                         if (i == 0)
-                            thumbnailBitmap = Images.Thumbnails.getThumbnail(cc.getContentResolver(), id, Images.Thumbnails.MINI_KIND, null);
+                            thumbnailDrawable = new BitmapDrawable(Images.Thumbnails.getThumbnail(cc.getContentResolver(), id, Images.Thumbnails.MINI_KIND, null));
                         else
-                            thumbnailBitmap = Video.Thumbnails.getThumbnail(cc.getContentResolver(), id, Video.Thumbnails.MINI_KIND, null);
+                            thumbnailDrawable = new BitmapDrawable(Video.Thumbnails.getThumbnail(cc.getContentResolver(), id, Video.Thumbnails.MINI_KIND, null));
 
-                        allMediaList.add(new MediaStruct(thumbnailBitmap, uri, absPath, date));
+                        allMediaList.add(new MediaStruct(thumbnailDrawable, uri, absPath, date));
 
                         k++;
 

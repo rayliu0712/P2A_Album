@@ -5,7 +5,7 @@
     android:orientation="vertical">
 
     <GridView
-        android:id="@+id/medium_av"
+        android:id="@+id/gv"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:numColumns="2" />

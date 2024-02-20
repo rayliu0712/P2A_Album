@@ -1,5 +1,6 @@
 package rl.p2a.fragment;
 
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +14,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.bumptech.glide.Glide;
+
 import rl.p2a.Database;
 import rl.p2a.R;
 import rl.p2a.struct.AlbumStruct;
@@ -24,7 +27,7 @@ public class AlbumsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        GridView gv = view.findViewById(R.id.medium_av);
+        GridView gv = view.findViewById(R.id.gv);
         gv.setAdapter(new ArrayAdapter<AlbumStruct>(cc(), R.layout.albums_item, Database.albumList) {
             @NonNull
             @Override
@@ -35,14 +38,17 @@ public class AlbumsFragment extends Fragment {
                 ((TextView) convertView.findViewById(R.id.tv))
                         .setText(Database.getAlbum(i).galleryName);
 
-                ((ImageView) convertView.findViewById(R.id.small_iv))
-                        .setImageBitmap(Database.getAlbum(i).getMedia(0).thumbnailBitmap);
+                Drawable drawable = Database.getAlbum(i).getMedia(0).thumbnailDrawable;
+                Glide.with(cc())
+                        .load(drawable)
+                        .placeholder(drawable)
+                        .into((ImageView) convertView.findViewById(R.id.iv));
 
                 return convertView;
             }
         });
         gv.setOnItemClickListener((parent, view1, i, id) -> {
-            cc().switchDisplayedFragment(MainActivity.CELL_FRAGMENT, i, true);
+            cc().switchDisplayedFragment(MainActivity.CELLS_FRAGMENT, i, true);
         });
     }
 
