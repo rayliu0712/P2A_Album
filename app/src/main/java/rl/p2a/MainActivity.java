@@ -10,7 +10,9 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.Display;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -19,12 +21,13 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentTransaction;
 
+import java.util.Arrays;
+
 import rl.p2a.fragment.AlbumsFragment;
 import rl.p2a.fragment.BedFragment;
 import rl.p2a.fragment.CellsFragment;
 
 public class MainActivity extends AppCompatActivity {
-
     public static final int INIT = -1;
     public static final int CELLS_FRAGMENT = 0;
     public static final int AlBUMS_FRAGMENT = 1;
@@ -36,11 +39,21 @@ public class MainActivity extends AppCompatActivity {
     private final AlbumsFragment albumsFragment = new AlbumsFragment();
 
     public ProgressBar pb;
+    public final Handler handler = new Handler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
+        // 設定高更新率
+        WindowManager.LayoutParams layoutParams = getWindow().getAttributes();
+        Display.Mode[] modes = getWindowManager().getDefaultDisplay().getSupportedModes();
+        Arrays.sort(modes, (o1, o2) -> (int) (o2.getRefreshRate() - o1.getRefreshRate()));
+        layoutParams.preferredDisplayModeId = modes[0].getModeId();
+        getWindow().setAttributes(layoutParams);
+
 
         ImageView photosIV = findViewById(R.id.photos);
         ImageView albumsIV = findViewById(R.id.albums);
@@ -107,10 +120,9 @@ public class MainActivity extends AppCompatActivity {
 
         if (requestCode == BASIC_PERMISSIONS) {
             if (grantResults[0] == PERMISSION_GRANTED) {
-                Handler handler = new Handler();
                 Database.getThumbnailsAndSetLists(this, handler);
             } else {
-                EzTools.dialog(this, "Insufficient Access Rights", "P2G Gallery requires the permissions you denied.", null);
+                EzTools.dialog(this, "Insufficient Access Rights", "P2A Album requires the permissions you denied.", null);
             }
         }
     }
@@ -143,7 +155,8 @@ public class MainActivity extends AppCompatActivity {
 
             case BED_FRAGMENT:
                 Database.iMedia = nextMediaOrAlbumIndex;
-                bedFragment.glide();
+//                bedFragment.glide();
+                bedFragment.update();
                 hideBar();
                 ft.show(bedFragment);
                 break;

@@ -2,54 +2,110 @@ package rl.p2a.fragment;
 
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.provider.MediaStore.Video;
-import android.view.GestureDetector;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
-import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.VideoView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.viewpager.widget.PagerAdapter;
+import androidx.viewpager.widget.ViewPager;
 
 import com.bumptech.glide.Glide;
 
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+
 import rl.p2a.Database;
-import rl.p2a.R;
 import rl.p2a.MainActivity;
+import rl.p2a.R;
+import rl.p2a.struct.MediaStruct;
 
 public class BedFragment extends Fragment {
-
-    private float scaleFactor = 1.0f;
-
-    private VideoView vv;
-    private ImageView iv;
+    private ViewPager viewPager;
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        vv = view.findViewById(R.id.vv);
-        iv = view.findViewById(R.id.small_iv);
+        viewPager = view.findViewById(R.id.vp);
+        viewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+            }
 
-        glide();
+            @Override
+            public void onPageSelected(int position) {
+                Database.iMedia = position;
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+            }
+        });
+        viewPager.setAdapter(new PagerAdapter() {
+            @Override
+            public int getCount() {
+                return Database.getAlbum().mediaList.size();
+            }
+
+            @Override
+            public boolean isViewFromObject(@NonNull View view, @NonNull Object object) {
+                return view == object;
+            }
+
+            @NonNull
+            @Override
+            public Object instantiateItem(@NonNull ViewGroup container, int position) {
+                View itemView = cc().getLayoutInflater().inflate(R.layout.viewpager_item, container, false);
+
+                ImageView imageView = itemView.findViewById(R.id.iv);
+
+                MediaStruct current = Database.getAlbum().getMedia(position);
+
+                Drawable thumbnailDrawable = current.thumbnailDrawable;
+                Glide.with(cc()).load(thumbnailDrawable).placeholder(thumbnailDrawable).into(imageView);
+
+                new Thread(() -> {
+                    try {
+                        final InputStream is = cc().getContentResolver().openInputStream(current.uri);
+                        final Drawable drawable = Drawable.createFromStream(is, current.uri.toString());
+                        cc().handler.post(() -> {
+                            Glide.with(cc()).load(drawable).placeholder(drawable).into(imageView);
+                        });
+                    } catch (FileNotFoundException e) {
+                    }
+                }).start();
+
+//                Objects.requireNonNull(container).addView(itemView);
+                container.addView(itemView);
+                return itemView;
+            }
+
+            @Override
+            public void destroyItem(ViewGroup container, int position, Object object) {
+                container.removeView((FrameLayout) object);
+            }
+        });
+
+
+        /*
         if (isCurVideo())
-            vv.setVideoURI(Database.getCurrent().uri);
+            videoView.setVideoURI(Database.getCurrent().uri);
 
         GestureDetector gestureDetector = new GestureDetector(cc(),
                 new GestureDetector.SimpleOnGestureListener() {
                     @Override
                     public boolean onSingleTapUp(@NonNull MotionEvent e) {
-                        if (vv.isPlaying()) {
-                            vv.pause();
+                        if (videoView.isPlaying()) {
+                            videoView.pause();
                         } else if (isCurVideo()) {
                             iv.setVisibility(View.GONE);
-                            vv.setVisibility(View.VISIBLE);
-                            vv.start();
+                            videoView.setVisibility(View.VISIBLE);
+                            videoView.start();
                         }
                         return false;
                     }
@@ -70,11 +126,11 @@ public class BedFragment extends Fragment {
                         }
 
                         iv.setVisibility(View.VISIBLE);
-                        vv.setVisibility(View.GONE);
+                        videoView.setVisibility(View.GONE);
 
                         glide();
                         if (isCurVideo())
-                            vv.setVideoURI(Database.getCurrent().uri);
+                            videoView.setVideoURI(Database.getCurrent().uri);
 
                         return false;
                     }
@@ -101,25 +157,14 @@ public class BedFragment extends Fragment {
                 return true;
             }
         });
-    }
-
-    public void glide() {
-        try {
-            Drawable drawable = Drawable.createFromStream(
-                    cc().getContentResolver().openInputStream(Database.getCurrent().uri),
-                    Database.getCurrent().uri.toString());
-
-            Glide.with(this).load(Database.getCurrent().uri).placeholder(drawable).into(iv);
-        } catch (Exception e) {
-        }
-    }
-
-    private boolean isCurVideo() {
-        return Database.getCurrent().uri.toString().contains(Video.Media.EXTERNAL_CONTENT_URI + "/");
+         */
     }
 
 
-    /* ==================================================================================================== */
+    public void update() {
+        viewPager.setCurrentItem(Database.iMedia, false);
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {

@@ -1,9 +1,6 @@
 package rl.p2a;
 
-import android.app.AlertDialog;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -11,14 +8,12 @@ import android.os.Handler;
 import android.provider.MediaStore.Images;
 import android.provider.MediaStore.Video;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 
 import rl.p2a.struct.AlbumStruct;
 import rl.p2a.struct.MediaStruct;
 
 public class Database {
-
     public static int iMedia = 0;
     public static int iAlbum = -1;
     public static ArrayList<MediaStruct> allMediaList = new ArrayList<>();
@@ -105,9 +100,5 @@ public class Database {
 
     public static AlbumStruct getAlbum() {
         return getAlbum(iAlbum);
-    }
-
-    public static MediaStruct getCurrent() {
-        return getAlbum().getMedia(iMedia);
     }
 }

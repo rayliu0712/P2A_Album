@@ -22,7 +22,6 @@ import rl.p2a.R;
 import rl.p2a.struct.MediaStruct;
 
 public class CellsFragment extends Fragment {
-
     private GridView gv;
 
     @Override
