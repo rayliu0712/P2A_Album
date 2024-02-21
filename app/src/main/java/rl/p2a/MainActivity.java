@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
     private final BedFragment bedFragment = new BedFragment();
     private final AlbumsFragment albumsFragment = new AlbumsFragment();
 
+    public View bar;
     public ProgressBar pb;
     public final Handler handler = new Handler();
 
@@ -59,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
         ImageView albumsIV = findViewById(R.id.albums);
         ImageView moreIV = findViewById(R.id.more);
         TextView moreTV = findViewById(R.id.more_t);
+        bar = findViewById(R.id.bar);
         pb = findViewById(R.id.pb);
 
         findViewById(R.id.bar1).setOnClickListener(v -> {
@@ -145,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
 
             case CELLS_FRAGMENT:
                 Database.iAlbum = nextMediaOrAlbumIndex;
-                cellsFragment.setAdapter();  // 應該先switch fragment再async load
+                cellsFragment.update();
                 ft.show(cellsFragment);
                 break;
 
@@ -155,9 +157,7 @@ public class MainActivity extends AppCompatActivity {
 
             case BED_FRAGMENT:
                 Database.iMedia = nextMediaOrAlbumIndex;
-//                bedFragment.glide();
                 bedFragment.update();
-                hideBar();
                 ft.show(bedFragment);
                 break;
         }
@@ -194,11 +194,11 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void hideBar() {
-        findViewById(R.id.bar).setVisibility(View.GONE);
+        bar.setVisibility(View.GONE);
     }
 
     public void showBar() {
-        findViewById(R.id.bar).setVisibility(View.VISIBLE);
+        bar.setVisibility(View.VISIBLE);
     }
 
     public Drawable getDrawableFromResource(int id) {

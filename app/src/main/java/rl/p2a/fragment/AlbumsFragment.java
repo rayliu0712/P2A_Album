@@ -22,40 +22,46 @@ import rl.p2a.struct.AlbumStruct;
 import rl.p2a.MainActivity;
 
 public class AlbumsFragment extends Fragment {
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-
-        GridView gv = view.findViewById(R.id.gv);
-        gv.setAdapter(new ArrayAdapter<AlbumStruct>(cc(), R.layout.albums_item, Database.albumList) {
-            @NonNull
-            @Override
-            public View getView(int i, @Nullable View convertView, @NonNull ViewGroup parent) {
-                if (convertView == null)
-                    convertView = getLayoutInflater().inflate(R.layout.albums_item, parent, false);
-
-                ((TextView) convertView.findViewById(R.id.tv))
-                        .setText(Database.getAlbum(i).galleryName);
-
-                Drawable drawable = Database.getAlbum(i).getMedia(0).thumbnailDrawable;
-                Glide.with(cc())
-                        .load(drawable)
-                        .placeholder(drawable)
-                        .into((ImageView) convertView.findViewById(R.id.iv));
-
-                return convertView;
-            }
-        });
-        gv.setOnItemClickListener((parent, view1, i, id) -> {
-            cc().switchDisplayedFragment(MainActivity.CELLS_FRAGMENT, i, true);
-        });
-    }
-
+    private GridView gv;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_albums, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        gv = view.findViewById(R.id.gv);
+        gv.setOnItemClickListener((parent, view1, i, id) -> {
+            cc().switchDisplayedFragment(MainActivity.CELLS_FRAGMENT, i, true);
+        });
+        update();
+    }
+
+    public void update() {
+        gv.setAdapter(
+                new ArrayAdapter<AlbumStruct>(cc(), R.layout.albums_item, Database.albumList) {
+                    @NonNull
+                    @Override
+                    public View getView(int i, @Nullable View convertView, @NonNull ViewGroup parent) {
+                        if (convertView == null)
+                            convertView = getLayoutInflater().inflate(R.layout.albums_item, parent, false);
+
+                        ((TextView) convertView.findViewById(R.id.tv))
+                                .setText(Database.getAlbum(i).galleryName);
+
+                        Drawable drawable = Database.getAlbum(i).getMedia(0).thumbnailDrawable;
+                        Glide.with(cc())
+                                .load(drawable).placeholder(drawable)
+                                .into((ImageView) convertView.findViewById(R.id.iv));
+
+                        return convertView;
+                    }
+                }
+        );
     }
 
     private MainActivity cc() {

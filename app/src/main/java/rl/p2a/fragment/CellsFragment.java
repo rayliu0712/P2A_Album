@@ -1,6 +1,5 @@
 package rl.p2a.fragment;
 
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -24,6 +23,12 @@ import rl.p2a.struct.MediaStruct;
 public class CellsFragment extends Fragment {
     private GridView gv;
 
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_cells, container, false);
+    }
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -32,31 +37,27 @@ public class CellsFragment extends Fragment {
         gv.setOnItemClickListener((parent, view1, i, id) -> {
             cc().switchDisplayedFragment(MainActivity.BED_FRAGMENT, i, true);
         });
-        setAdapter();
+        update();
     }
 
-    public void setAdapter() {
-        gv.setAdapter(new ArrayAdapter<MediaStruct>(cc(), R.layout.cells_item, Database.getAlbum().mediaList) {
-            @NonNull
-            @Override
-            public View getView(int i, @Nullable View convertView, @NonNull ViewGroup parent) {
-                if (convertView == null)
-                    convertView = getLayoutInflater().inflate(R.layout.cells_item, parent, false);
+    public void update() {
+        gv.setAdapter(
+                new ArrayAdapter<MediaStruct>(cc(), R.layout.cells_item, Database.getAlbum().mediaList) {
+                    @NonNull
+                    @Override
+                    public View getView(int i, @Nullable View convertView, @NonNull ViewGroup parent) {
+                        if (convertView == null)
+                            convertView = getLayoutInflater().inflate(R.layout.cells_item, parent, false);
 
-                ImageView iv = convertView.findViewById(R.id.iv);
-                Drawable drawable = Database.getAlbum().getMedia(i).thumbnailDrawable;
-                Glide.with(cc()).load(drawable).placeholder(drawable).into(iv);
-                return convertView;
-            }
-        });
-    }
+                        Drawable drawable = Database.getAlbum().getMedia(i).thumbnailDrawable;
+                        Glide.with(cc())
+                                .load(drawable).placeholder(drawable)
+                                .into((ImageView) convertView.findViewById(R.id.iv));
 
-
-    /* ==================================================================================================== */
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_cells, container, false);
+                        return convertView;
+                    }
+                }
+        );
     }
 
     private MainActivity cc() {
