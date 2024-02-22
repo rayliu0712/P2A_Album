@@ -26,6 +26,7 @@ import java.util.Arrays;
 import rl.p2a.fragment.AlbumsFragment;
 import rl.p2a.fragment.BedFragment;
 import rl.p2a.fragment.CellsFragment;
+import rl.p2a.R;
 
 public class MainActivity extends AppCompatActivity {
     public static final int INIT = -1;

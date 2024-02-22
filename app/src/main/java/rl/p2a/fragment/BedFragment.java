@@ -94,7 +94,6 @@ public class BedFragment extends Fragment {
                             }
                         }).start();
 
-//            Objects.requireNonNull(container).addView(itemView);
                         container.addView(itemView);
                         return itemView;
                     }
