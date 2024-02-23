@@ -36,32 +36,26 @@ public class AlbumsFragment extends Fragment {
 
         gv = view.findViewById(R.id.gv);
         gv.setOnItemClickListener((parent, view1, i, id) -> {
-            cc().switchDisplayedFragment(MainActivity.CELLS_FRAGMENT, i, true);
+            cc().setFragmentPagerAdapter(new char[]{MainActivity.CELLS_FRAGMENT}, new int[]{i});
         });
-        update();
-    }
+        gv.setAdapter(new ArrayAdapter<AlbumStruct>(cc(), R.layout.albums_item, Database.albumList) {
+            @NonNull
+            @Override
+            public View getView(int i, @Nullable View convertView, @NonNull ViewGroup parent) {
+                if (convertView == null)
+                    convertView = getLayoutInflater().inflate(R.layout.albums_item, parent, false);
 
-    public void update() {
-        gv.setAdapter(
-                new ArrayAdapter<AlbumStruct>(cc(), R.layout.albums_item, Database.albumList) {
-                    @NonNull
-                    @Override
-                    public View getView(int i, @Nullable View convertView, @NonNull ViewGroup parent) {
-                        if (convertView == null)
-                            convertView = getLayoutInflater().inflate(R.layout.albums_item, parent, false);
+                ((TextView) convertView.findViewById(R.id.tv))
+                        .setText(Database.getAlbum(i).galleryName);
 
-                        ((TextView) convertView.findViewById(R.id.tv))
-                                .setText(Database.getAlbum(i).galleryName);
+                Drawable drawable = Database.getAlbum(i).getMedia(0).thumbnailDrawable;
+                Glide.with(cc())
+                        .load(drawable).placeholder(drawable)
+                        .into((ImageView) convertView.findViewById(R.id.iv));
 
-                        Drawable drawable = Database.getAlbum(i).getMedia(0).thumbnailDrawable;
-                        Glide.with(cc())
-                                .load(drawable).placeholder(drawable)
-                                .into((ImageView) convertView.findViewById(R.id.iv));
-
-                        return convertView;
-                    }
-                }
-        );
+                return convertView;
+            }
+        });
     }
 
     private MainActivity cc() {

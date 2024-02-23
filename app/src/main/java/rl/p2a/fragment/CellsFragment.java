@@ -35,29 +35,23 @@ public class CellsFragment extends Fragment {
 
         gv = view.findViewById(R.id.gv);
         gv.setOnItemClickListener((parent, view1, i, id) -> {
-            cc().switchDisplayedFragment(MainActivity.BED_FRAGMENT, i, true);
+            cc().setFragmentPagerAdapter(new char[]{MainActivity.BED_FRAGMENT}, new int[]{i});
         });
-        update();
-    }
+        gv.setAdapter(new ArrayAdapter<MediaStruct>(cc(), R.layout.cells_item, Database.getAlbum().mediaList) {
+            @NonNull
+            @Override
+            public View getView(int i, @Nullable View convertView, @NonNull ViewGroup parent) {
+                if (convertView == null)
+                    convertView = getLayoutInflater().inflate(R.layout.cells_item, parent, false);
 
-    public void update() {
-        gv.setAdapter(
-                new ArrayAdapter<MediaStruct>(cc(), R.layout.cells_item, Database.getAlbum().mediaList) {
-                    @NonNull
-                    @Override
-                    public View getView(int i, @Nullable View convertView, @NonNull ViewGroup parent) {
-                        if (convertView == null)
-                            convertView = getLayoutInflater().inflate(R.layout.cells_item, parent, false);
+                Drawable drawable = Database.getAlbum().getMedia(i).thumbnailDrawable;
+                Glide.with(cc())
+                        .load(drawable).placeholder(drawable)
+                        .into((ImageView) convertView.findViewById(R.id.iv));
 
-                        Drawable drawable = Database.getAlbum().getMedia(i).thumbnailDrawable;
-                        Glide.with(cc())
-                                .load(drawable).placeholder(drawable)
-                                .into((ImageView) convertView.findViewById(R.id.iv));
-
-                        return convertView;
-                    }
-                }
-        );
+                return convertView;
+            }
+        });
     }
 
     private MainActivity cc() {

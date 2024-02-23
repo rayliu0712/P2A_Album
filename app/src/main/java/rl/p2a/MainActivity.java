@@ -6,48 +6,45 @@ import static android.Manifest.permission.READ_MEDIA_VIDEO;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.Display;
-import android.view.View;
 import android.view.WindowManager;
-import android.widget.ImageView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentTransaction;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.viewpager.widget.ViewPager;
 
 import java.util.Arrays;
 
 import rl.p2a.fragment.AlbumsFragment;
 import rl.p2a.fragment.BedFragment;
 import rl.p2a.fragment.CellsFragment;
-import rl.p2a.R;
 
 public class MainActivity extends AppCompatActivity {
-    public static final int INIT = -1;
-    public static final int CELLS_FRAGMENT = 0;
-    public static final int AlBUMS_FRAGMENT = 1;
-    public static final int BED_FRAGMENT = 2;
-    private final int BASIC_PERMISSIONS = 0;
+    public static final char CELLS_FRAGMENT = 0;
+    public static final char BED_FRAGMENT = 1;
+    public static final char ALBUMS_FRAGMENT = 2;
+    public static final char[] basicFragments = new char[]{CELLS_FRAGMENT, ALBUMS_FRAGMENT};
+    public Handler handler = new Handler();
 
-    private final CellsFragment cellsFragment = new CellsFragment();
-    private final BedFragment bedFragment = new BedFragment();
-    private final AlbumsFragment albumsFragment = new AlbumsFragment();
 
-    public View bar;
-    public ProgressBar pb;
-    public final Handler handler = new Handler();
+    // maybe can remove it, use list<Fragment> instead?
+    private CellsFragment cellsFragment = new CellsFragment();
+    private BedFragment bedFragment = new BedFragment();
+    private AlbumsFragment albumsFragment = new AlbumsFragment();
+    private final char BASIC_PERMISSIONS = 0;
+
+    private ViewPager viewPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        viewPager = findViewById(R.id.vp);
 
         // 設定高更新率
         WindowManager.LayoutParams layoutParams = getWindow().getAttributes();
@@ -55,37 +52,6 @@ public class MainActivity extends AppCompatActivity {
         Arrays.sort(modes, (o1, o2) -> (int) (o2.getRefreshRate() - o1.getRefreshRate()));
         layoutParams.preferredDisplayModeId = modes[0].getModeId();
         getWindow().setAttributes(layoutParams);
-
-
-        ImageView photosIV = findViewById(R.id.photos);
-        ImageView albumsIV = findViewById(R.id.albums);
-        ImageView moreIV = findViewById(R.id.more);
-        TextView moreTV = findViewById(R.id.more_t);
-        bar = findViewById(R.id.bar);
-        pb = findViewById(R.id.pb);
-
-        findViewById(R.id.bar1).setOnClickListener(v -> {
-            photosIV.setImageDrawable(getDrawableFromResource(R.drawable.photo_outlined));
-            albumsIV.setImageDrawable(getDrawableFromResource(R.drawable.album_filled));
-            moreIV.setImageDrawable(getDrawableFromResource(R.drawable.more_white));
-            moreTV.setTextColor(getColor(R.color.white));
-            switchDisplayedFragment(CELLS_FRAGMENT, -1, false);
-        });
-
-        findViewById(R.id.bar2).setOnClickListener(v -> {
-            photosIV.setImageDrawable(getDrawableFromResource(R.drawable.photo_filled));
-            albumsIV.setImageDrawable(getDrawableFromResource(R.drawable.album_outlined));
-            moreIV.setImageDrawable(getDrawableFromResource(R.drawable.more_white));
-            moreTV.setTextColor(getColor(R.color.white));
-            switchDisplayedFragment(AlBUMS_FRAGMENT, -1, false);
-        });
-
-        findViewById(R.id.bar3).setOnClickListener(v -> {
-            photosIV.setImageDrawable(getDrawableFromResource(R.drawable.photo_filled));
-            albumsIV.setImageDrawable(getDrawableFromResource(R.drawable.album_filled));
-            moreIV.setImageDrawable(getDrawableFromResource(R.drawable.more_blue));
-            moreTV.setTextColor(getColor(R.color.blue));
-        });
 
         if (checkOrGrantBasicPermissions())
             onRequestPermissionsResult(BASIC_PERMISSIONS, null, new int[]{PERMISSION_GRANTED});
@@ -123,86 +89,77 @@ public class MainActivity extends AppCompatActivity {
 
         if (requestCode == BASIC_PERMISSIONS) {
             if (grantResults[0] == PERMISSION_GRANTED) {
-                Database.getThumbnailsAndSetLists(this, handler);
+                Database.getThumbnailsAndSetLists(this);
             } else {
                 EzTools.dialog(this, "Insufficient Access Rights", "P2A Album requires the permissions you denied.", null);
             }
         }
     }
 
-
-    public void switchDisplayedFragment(int nextFragment, int nextMediaOrAlbumIndex, boolean addToBackStack) {
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-
-        switch (nextFragment) {
-            case INIT:
-                ft.add(R.id.container, cellsFragment)
-                        .add(R.id.container, bedFragment)
-                        .add(R.id.container, albumsFragment);
-
-                ft.show(cellsFragment)
-                        .hide(albumsFragment).hide(bedFragment);
-
-                ft.commit();
-                return;
-
-            case CELLS_FRAGMENT:
-                Database.iAlbum = nextMediaOrAlbumIndex;
-                cellsFragment.update();
-                ft.show(cellsFragment);
-                break;
-
-            case AlBUMS_FRAGMENT:
-                ft.show(albumsFragment);
-                break;
-
-            case BED_FRAGMENT:
-                Database.iMedia = nextMediaOrAlbumIndex;
-                bedFragment.update();
-                ft.show(bedFragment);
-                break;
-        }
-
-        if (addToBackStack)
-            ft.addToBackStack(null);
-
-        if (cellsFragment.isVisible() && nextFragment != CELLS_FRAGMENT)
-            ft.hide(cellsFragment);
-        else if (bedFragment.isVisible() && nextFragment != BED_FRAGMENT)
-            ft.hide(bedFragment);
-        else if (albumsFragment.isVisible() && nextFragment != AlBUMS_FRAGMENT)
-            ft.hide(albumsFragment);
-
-        ft.commit();
-    }
-
-
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
-
-        showBar();
+        if (bedFragment.isVisible()) {
+            setFragmentPagerAdapter(basicFragments, null);
+        } else
+            super.onBackPressed();
     }
-
 
     @Override
     protected void onDestroy() {
         Database.allMediaList = null;
         Database.albumList = null;
+        handler = null;
 
         super.onDestroy();
     }
 
+    public void setFragmentPagerAdapter(char[] fragmentIDs, int[] nextMediaOrAlbumIndex) {
+        getSupportFragmentManager().beginTransaction()
+                .remove(cellsFragment)
+                .remove(albumsFragment)
+                .remove(bedFragment)
+                .commitNow();
 
-    public void hideBar() {
-        bar.setVisibility(View.GONE);
-    }
 
-    public void showBar() {
-        bar.setVisibility(View.VISIBLE);
-    }
+        // re-instance fragments
+        cellsFragment = new CellsFragment();
+        bedFragment = new BedFragment();
+        albumsFragment = new AlbumsFragment();
 
-    public Drawable getDrawableFromResource(int id) {
-        return getResources().getDrawable(id);
+        Fragment[] fragments = new Fragment[fragmentIDs.length];
+        for (int i = 0; i < fragmentIDs.length; i++) {
+            switch (fragmentIDs[i]) {
+                case CELLS_FRAGMENT:
+                    if (fragmentIDs.length == 1)
+                        Database.iAlbum = nextMediaOrAlbumIndex[0];
+                    fragments[i] = cellsFragment;
+                    break;
+
+                case BED_FRAGMENT:
+                    if (fragmentIDs.length == 1)
+                        Database.iMedia = nextMediaOrAlbumIndex[0];
+                    fragments[i] = bedFragment;
+                    break;
+
+                case ALBUMS_FRAGMENT:
+                    fragments[i] = albumsFragment;
+                    break;
+            }
+        }
+
+        viewPager.setAdapter(new FragmentPagerAdapter(getSupportFragmentManager()) {
+            @NonNull
+            @Override
+            public Fragment getItem(int position) {
+                return fragments[position];
+            }
+
+            @Override
+            public int getCount() {
+                return fragments.length;
+            }
+        });
+
+        viewPager.setCurrentItem(0, false);
     }
 }

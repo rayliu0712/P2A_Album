@@ -4,7 +4,6 @@ import android.database.Cursor;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Handler;
 import android.provider.MediaStore.Images;
 import android.provider.MediaStore.Video;
 
@@ -19,9 +18,11 @@ public class Database {
     public static ArrayList<MediaStruct> allMediaList = new ArrayList<>();
     public static ArrayList<AlbumStruct> albumList = new ArrayList<>();
 
-    public static void getThumbnailsAndSetLists(MainActivity cc, Handler handler) {
-
+    public static void getThumbnailsAndSetLists(MainActivity cc) {
         new Thread(() -> {
+            cc.handler.post(() -> {
+                EzTools.toast(cc, "start");
+            });
 
             for (int i = 0; i < 2; i++) {
                 Uri externalContentUri;
@@ -38,7 +39,6 @@ public class Database {
                         "date_added ASC");  // ascending order
 
                 int k = 0;
-                cc.pb.setMax(cursor.getCount());
                 if (cursor.moveToFirst()) {
                     do {
                         String date = cursor.getString(cursor.getColumnIndexOrThrow("date_added"));
@@ -59,8 +59,7 @@ public class Database {
                         k++;
 
                         int finalK = k;
-                        handler.post(() -> {
-                            cc.pb.setProgress(finalK);
+                        cc.handler.post(() -> {
                         });
 
                     } while (cursor.moveToNext());
@@ -84,12 +83,12 @@ public class Database {
                 getAlbum(index).addMedia(ms);
             }
 
-            handler.post(() -> {
-                cc.switchDisplayedFragment(MainActivity.INIT, -1, false);
+            cc.handler.post(() -> {
+                EzTools.toast(cc, "updated");
+                cc.setFragmentPagerAdapter(MainActivity.basicFragments, null);
             });
         }).start();
     }
-
 
     public static AlbumStruct getAlbum(int i) {
         if (i == -1)

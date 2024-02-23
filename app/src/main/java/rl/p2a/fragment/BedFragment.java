@@ -53,57 +53,50 @@ public class BedFragment extends Fragment {
             public void onPageScrollStateChanged(int state) {
             }
         });
-        update();
-    }
+        viewPager.setAdapter(new PagerAdapter() {
+            @Override
+            public int getCount() {
+                return Database.getAlbum().mediaList.size();
+            }
 
-    public void update() {
-        viewPager.setAdapter(
-                new PagerAdapter() {
-                    @Override
-                    public int getCount() {
-                        return Database.getAlbum().mediaList.size();
+            @Override
+            public boolean isViewFromObject(@NonNull View view, @NonNull Object object) {
+                return view == object;
+            }
+
+            @NonNull
+            @Override
+            public Object instantiateItem(@NonNull ViewGroup container, int position) {
+                View itemView = cc().getLayoutInflater().inflate(R.layout.viewpager_item, container, false);
+
+                ImageView imageView = itemView.findViewById(R.id.iv);
+
+                MediaStruct current = Database.getAlbum().getMedia(position);
+
+                Drawable thumbnailDrawable = current.thumbnailDrawable;
+                Glide.with(cc()).load(thumbnailDrawable).placeholder(thumbnailDrawable).into(imageView);
+
+
+                new Thread(() -> {
+                    try {
+                        final InputStream is = cc().getContentResolver().openInputStream(current.uri);
+                        final Drawable drawable = Drawable.createFromStream(is, current.uri.toString());
+                        cc().handler.post(() -> {
+                            Glide.with(cc()).load(drawable).placeholder(drawable).into(imageView);
+                        });
+                    } catch (FileNotFoundException e) {
                     }
+                }).start();
 
-                    @Override
-                    public boolean isViewFromObject(@NonNull View view, @NonNull Object object) {
-                        return view == object;
-                    }
+                container.addView(itemView);
+                return itemView;
+            }
 
-                    @NonNull
-                    @Override
-                    public Object instantiateItem(@NonNull ViewGroup container, int position) {
-                        View itemView = cc().getLayoutInflater().inflate(R.layout.viewpager_item, container, false);
-
-                        ImageView imageView = itemView.findViewById(R.id.iv);
-
-                        MediaStruct current = Database.getAlbum().getMedia(position);
-
-                        Drawable thumbnailDrawable = current.thumbnailDrawable;
-                        Glide.with(cc()).load(thumbnailDrawable).placeholder(thumbnailDrawable).into(imageView);
-                        cc().hideBar();  // TODO:解決切換時會閃一下的問題
-
-
-                        new Thread(() -> {
-                            try {
-                                final InputStream is = cc().getContentResolver().openInputStream(current.uri);
-                                final Drawable drawable = Drawable.createFromStream(is, current.uri.toString());
-                                cc().handler.post(() -> {
-                                    Glide.with(cc()).load(drawable).placeholder(drawable).into(imageView);
-                                });
-                            } catch (FileNotFoundException e) {
-                            }
-                        }).start();
-
-                        container.addView(itemView);
-                        return itemView;
-                    }
-
-                    @Override
-                    public void destroyItem(ViewGroup container, int position, Object object) {
-                        container.removeView((FrameLayout) object);
-                    }
-                }
-        );
+            @Override
+            public void destroyItem(ViewGroup container, int position, Object object) {
+                container.removeView((FrameLayout) object);
+            }
+        });
 
         viewPager.setCurrentItem(Database.iMedia, false);
     }
