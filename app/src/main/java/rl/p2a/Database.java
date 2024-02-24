@@ -7,8 +7,12 @@ import android.net.Uri;
 import android.provider.MediaStore.Images;
 import android.provider.MediaStore.Video;
 
+import androidx.fragment.app.Fragment;
+
 import java.util.ArrayList;
 
+import rl.p2a.fragment.AlbumsFragment;
+import rl.p2a.fragment.CellsFragment;
 import rl.p2a.struct.AlbumStruct;
 import rl.p2a.struct.MediaStruct;
 
@@ -18,10 +22,10 @@ public class Database {
     public static ArrayList<MediaStruct> allMediaList = new ArrayList<>();
     public static ArrayList<AlbumStruct> albumList = new ArrayList<>();
 
-    public static void getThumbnailsAndSetLists(MainActivity cc) {
+    public static void getThumbnailsAndSetLists(MainActivity ma) {
         new Thread(() -> {
-            cc.handler.post(() -> {
-                EzTools.toast(cc, "start");
+            MainActivity.handler.post(() -> {
+                EzTools.toast(ma, "start");
             });
 
             for (int i = 0; i < 2; i++) {
@@ -31,7 +35,7 @@ public class Database {
                 else
                     externalContentUri = Video.Media.EXTERNAL_CONTENT_URI;
 
-                Cursor cursor = cc.getContentResolver().query(
+                Cursor cursor = ma.getContentResolver().query(
                         externalContentUri,
                         new String[]{"date_added", "_data", "_id"},
                         null,
@@ -39,6 +43,7 @@ public class Database {
                         "date_added ASC");  // ascending order
 
                 int k = 0;
+                assert cursor != null;
                 if (cursor.moveToFirst()) {
                     do {
                         String date = cursor.getString(cursor.getColumnIndexOrThrow("date_added"));
@@ -50,16 +55,16 @@ public class Database {
 
                         Drawable thumbnailDrawable;
                         if (i == 0)
-                            thumbnailDrawable = new BitmapDrawable(Images.Thumbnails.getThumbnail(cc.getContentResolver(), id, Images.Thumbnails.MINI_KIND, null));
+                            thumbnailDrawable = new BitmapDrawable(Images.Thumbnails.getThumbnail(ma.getContentResolver(), id, Images.Thumbnails.MINI_KIND, null));
                         else
-                            thumbnailDrawable = new BitmapDrawable(Video.Thumbnails.getThumbnail(cc.getContentResolver(), id, Video.Thumbnails.MINI_KIND, null));
+                            thumbnailDrawable = new BitmapDrawable(Video.Thumbnails.getThumbnail(ma.getContentResolver(), id, Video.Thumbnails.MINI_KIND, null));
 
                         allMediaList.add(new MediaStruct(thumbnailDrawable, uri, absPath, date));
 
                         k++;
 
                         int finalK = k;
-                        cc.handler.post(() -> {
+                        MainActivity.handler.post(() -> {
                         });
 
                     } while (cursor.moveToNext());
@@ -83,9 +88,9 @@ public class Database {
                 getAlbum(index).addMedia(ms);
             }
 
-            cc.handler.post(() -> {
-                EzTools.toast(cc, "updated");
-                cc.setFragmentPagerAdapter(MainActivity.basicFragments, null);
+            MainActivity.handler.post(() -> {
+                EzTools.toast(ma, "updated");
+                ma.updateFragmentPagerAdapter(null, new Fragment[]{new CellsFragment(), new AlbumsFragment()}, 0);
             });
         }).start();
     }

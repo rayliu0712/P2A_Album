@@ -8,7 +8,7 @@
         android:id="@+id/tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Photos"
+        android:text="@string/photos"
         android:textSize="60sp" />
 
     <GridView

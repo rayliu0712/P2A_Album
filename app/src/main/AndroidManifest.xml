@@ -3,8 +3,13 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <!-- For A9-A12 -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <!-- A9 Only -->
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
 
     <!-- For A13+ -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />

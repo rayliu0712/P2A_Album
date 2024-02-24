@@ -2,6 +2,7 @@ package rl.p2a.fragment;
 
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,7 +22,7 @@ import rl.p2a.R;
 import rl.p2a.struct.MediaStruct;
 
 public class CellsFragment extends Fragment {
-    private GridView gv;
+    private static Parcelable scrollState = null;
 
     @Nullable
     @Override
@@ -33,11 +34,21 @@ public class CellsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        gv = view.findViewById(R.id.gv);
+        MainActivity ma = (MainActivity) getActivity();
+        assert ma != null;
+
+        GridView gv = view.findViewById(R.id.gv);
         gv.setOnItemClickListener((parent, view1, i, id) -> {
-            cc().setFragmentPagerAdapter(new char[]{MainActivity.BED_FRAGMENT}, new int[]{i});
+            MainActivity.onBackState++;
+
+            // https://stackoverflow.com/questions/29581782/how-to-get-the-scrollposition-in-the-recyclerview-layoutmanager
+            scrollState = gv.onSaveInstanceState();
+
+            ma.updateFragmentPagerAdapter(new int[]{i}, new Fragment[]{new BedFragment()}, 0);
         });
-        gv.setAdapter(new ArrayAdapter<MediaStruct>(cc(), R.layout.cells_item, Database.getAlbum().mediaList) {
+
+
+        gv.setAdapter(new ArrayAdapter<MediaStruct>(ma, R.layout.cells_item, Database.getAlbum().mediaList) {
             @NonNull
             @Override
             public View getView(int i, @Nullable View convertView, @NonNull ViewGroup parent) {
@@ -45,16 +56,15 @@ public class CellsFragment extends Fragment {
                     convertView = getLayoutInflater().inflate(R.layout.cells_item, parent, false);
 
                 Drawable drawable = Database.getAlbum().getMedia(i).thumbnailDrawable;
-                Glide.with(cc())
+                Glide.with(ma)
                         .load(drawable).placeholder(drawable)
                         .into((ImageView) convertView.findViewById(R.id.iv));
 
                 return convertView;
             }
         });
-    }
 
-    private MainActivity cc() {
-        return (MainActivity) getActivity();
+        if (scrollState != null)
+            gv.onRestoreInstanceState(scrollState);
     }
 }

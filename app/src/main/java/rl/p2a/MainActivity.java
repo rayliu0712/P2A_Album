@@ -12,6 +12,7 @@ import android.os.Handler;
 import android.view.Display;
 import android.view.WindowManager;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
@@ -25,26 +26,66 @@ import rl.p2a.fragment.BedFragment;
 import rl.p2a.fragment.CellsFragment;
 
 public class MainActivity extends AppCompatActivity {
-    public static final char CELLS_FRAGMENT = 0;
-    public static final char BED_FRAGMENT = 1;
-    public static final char ALBUMS_FRAGMENT = 2;
-    public static final char[] basicFragments = new char[]{CELLS_FRAGMENT, ALBUMS_FRAGMENT};
-    public Handler handler = new Handler();
+    public static Handler handler = new Handler();
+    public static int onBackState = 0;
+    // 0 = finish()
+    // 1 = bed -> cells
+    // 2 = album's cells -> albums
+    // 3 = album's bed -> album's cells
 
-
-    // maybe can remove it, use list<Fragment> instead?
-    private CellsFragment cellsFragment = new CellsFragment();
-    private BedFragment bedFragment = new BedFragment();
-    private AlbumsFragment albumsFragment = new AlbumsFragment();
     private final char BASIC_PERMISSIONS = 0;
-
-    private ViewPager viewPager;
+    private Fragment[] currentFragments = new Fragment[]{};
+    private ViewPager fragmentPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        viewPager = findViewById(R.id.vp);
+
+        getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                switch (onBackState) {
+                    case 0:
+                        finish();
+                        break;
+                    case 1:
+                        updateFragmentPagerAdapter(null, new Fragment[]{new CellsFragment(), new AlbumsFragment()}, 0);
+                        onBackState = 0;
+                        break;
+                    case 2:
+                        updateFragmentPagerAdapter(new int[]{-1}, new Fragment[]{new CellsFragment(), new AlbumsFragment()}, 1);
+                        onBackState = 0;
+                        break;
+                    case 3:
+                        updateFragmentPagerAdapter(null, new Fragment[]{new CellsFragment()}, 0);
+                        onBackState--;
+                        break;
+                }
+                EzTools.log(onBackState);
+            }
+        });
+
+        fragmentPager = findViewById(R.id.vp);
+        fragmentPager.setAdapter(new FragmentPagerAdapter(getSupportFragmentManager()) {
+            @NonNull
+            @Override
+            public Fragment getItem(int position) {
+                return currentFragments[position];
+            }
+
+            // https://stackoverflow.com/questions/30080045/fragmentpageradapter-notifydatasetchanged-not-working
+            // required when updating this adapter
+            @Override
+            public int getItemPosition(@NonNull Object object) {
+                return POSITION_NONE;
+            }
+
+            @Override
+            public int getCount() {
+                return currentFragments.length;
+            }
+        });
 
         // 設定高更新率
         WindowManager.LayoutParams layoutParams = getWindow().getAttributes();
@@ -54,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
         getWindow().setAttributes(layoutParams);
 
         if (checkOrGrantBasicPermissions())
-            onRequestPermissionsResult(BASIC_PERMISSIONS, null, new int[]{PERMISSION_GRANTED});
+            onRequestPermissionsResult(BASIC_PERMISSIONS, new String[]{}, new int[]{PERMISSION_GRANTED});
     }
 
     private boolean checkOrGrantBasicPermissions() {
@@ -96,12 +137,26 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    public void onBackPressed() {
-        if (bedFragment.isVisible()) {
-            setFragmentPagerAdapter(basicFragments, null);
-        } else
-            super.onBackPressed();
+    public void updateFragmentPagerAdapter(int[] nextMediaOrAlbumIndex, Fragment[] nextFragments, int itemPosition) {  // add state arg
+        if (nextMediaOrAlbumIndex != null) {
+            for (Fragment fragment : nextFragments) {
+                if (fragment instanceof CellsFragment) {
+                    Database.iAlbum = nextMediaOrAlbumIndex[0];
+                } else if (fragment instanceof BedFragment) {
+                    Database.iMedia = nextMediaOrAlbumIndex[0];
+                }
+            }
+        }
+
+        for (Fragment fragment : currentFragments) {
+            getSupportFragmentManager().beginTransaction().remove(fragment).commitNow();
+        }
+        currentFragments = nextFragments;  // currentFragment is reference of nextFragment
+
+        assert fragmentPager.getAdapter() != null;
+        fragmentPager.getAdapter().notifyDataSetChanged();
+
+        fragmentPager.setCurrentItem(itemPosition, false);
     }
 
     @Override
@@ -109,57 +164,9 @@ public class MainActivity extends AppCompatActivity {
         Database.allMediaList = null;
         Database.albumList = null;
         handler = null;
+        currentFragments = null;
+        fragmentPager = null;
 
         super.onDestroy();
-    }
-
-    public void setFragmentPagerAdapter(char[] fragmentIDs, int[] nextMediaOrAlbumIndex) {
-        getSupportFragmentManager().beginTransaction()
-                .remove(cellsFragment)
-                .remove(albumsFragment)
-                .remove(bedFragment)
-                .commitNow();
-
-
-        // re-instance fragments
-        cellsFragment = new CellsFragment();
-        bedFragment = new BedFragment();
-        albumsFragment = new AlbumsFragment();
-
-        Fragment[] fragments = new Fragment[fragmentIDs.length];
-        for (int i = 0; i < fragmentIDs.length; i++) {
-            switch (fragmentIDs[i]) {
-                case CELLS_FRAGMENT:
-                    if (fragmentIDs.length == 1)
-                        Database.iAlbum = nextMediaOrAlbumIndex[0];
-                    fragments[i] = cellsFragment;
-                    break;
-
-                case BED_FRAGMENT:
-                    if (fragmentIDs.length == 1)
-                        Database.iMedia = nextMediaOrAlbumIndex[0];
-                    fragments[i] = bedFragment;
-                    break;
-
-                case ALBUMS_FRAGMENT:
-                    fragments[i] = albumsFragment;
-                    break;
-            }
-        }
-
-        viewPager.setAdapter(new FragmentPagerAdapter(getSupportFragmentManager()) {
-            @NonNull
-            @Override
-            public Fragment getItem(int position) {
-                return fragments[position];
-            }
-
-            @Override
-            public int getCount() {
-                return fragments.length;
-            }
-        });
-
-        viewPager.setCurrentItem(0, false);
     }
 }

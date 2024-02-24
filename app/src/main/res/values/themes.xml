@@ -1,7 +1,6 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+<resources>
     <style name="Base.Theme.P2AAlbum" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
+        <!-- Customize your dark theme here. -->
     </style>
 
     <style name="Theme.P2AAlbum" parent="Base.Theme.P2AAlbum" />

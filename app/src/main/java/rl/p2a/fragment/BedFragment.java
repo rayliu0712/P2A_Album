@@ -20,14 +20,11 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 
 import rl.p2a.Database;
-import rl.p2a.EzTools;
 import rl.p2a.MainActivity;
 import rl.p2a.R;
 import rl.p2a.struct.MediaStruct;
 
 public class BedFragment extends Fragment {
-    private ViewPager viewPager;
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -38,7 +35,10 @@ public class BedFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        viewPager = view.findViewById(R.id.vp);
+        MainActivity ma = (MainActivity) getActivity();
+        assert ma != null;
+
+        ViewPager viewPager = view.findViewById(R.id.vp);
         viewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -67,24 +67,22 @@ public class BedFragment extends Fragment {
             @NonNull
             @Override
             public Object instantiateItem(@NonNull ViewGroup container, int position) {
-                View itemView = cc().getLayoutInflater().inflate(R.layout.viewpager_item, container, false);
+                View itemView = ma.getLayoutInflater().inflate(R.layout.viewpager_item, container, false);
 
                 ImageView imageView = itemView.findViewById(R.id.iv);
 
                 MediaStruct current = Database.getAlbum().getMedia(position);
 
                 Drawable thumbnailDrawable = current.thumbnailDrawable;
-                Glide.with(cc()).load(thumbnailDrawable).placeholder(thumbnailDrawable).into(imageView);
+                Glide.with(ma).load(thumbnailDrawable).placeholder(thumbnailDrawable).into(imageView);
 
 
                 new Thread(() -> {
                     try {
-                        final InputStream is = cc().getContentResolver().openInputStream(current.uri);
+                        final InputStream is = ma.getContentResolver().openInputStream(current.uri);
                         final Drawable drawable = Drawable.createFromStream(is, current.uri.toString());
-                        cc().handler.post(() -> {
-                            Glide.with(cc()).load(drawable).placeholder(drawable).into(imageView);
-                        });
-                    } catch (FileNotFoundException e) {
+                        MainActivity.handler.post(() -> Glide.with(ma).load(drawable).placeholder(drawable).into(imageView));
+                    } catch (FileNotFoundException ignored) {
                     }
                 }).start();
 
@@ -93,15 +91,11 @@ public class BedFragment extends Fragment {
             }
 
             @Override
-            public void destroyItem(ViewGroup container, int position, Object object) {
+            public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
                 container.removeView((FrameLayout) object);
             }
         });
 
         viewPager.setCurrentItem(Database.iMedia, false);
-    }
-
-    private MainActivity cc() {
-        return (MainActivity) getActivity();
     }
 }

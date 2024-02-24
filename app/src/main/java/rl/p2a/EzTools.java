@@ -8,7 +8,7 @@ import android.widget.Toast;
 
 public class EzTools {
     public static void log(Object obj) {
-        Log.d("nachoneko", String.valueOf(obj));
+        Log.d("nacho", String.valueOf(obj));
     }
 
     public static void toast(Context context, Object obj) {

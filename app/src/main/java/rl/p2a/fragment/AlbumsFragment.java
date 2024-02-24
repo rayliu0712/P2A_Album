@@ -22,8 +22,6 @@ import rl.p2a.struct.AlbumStruct;
 import rl.p2a.MainActivity;
 
 public class AlbumsFragment extends Fragment {
-    private GridView gv;
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -34,11 +32,15 @@ public class AlbumsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        gv = view.findViewById(R.id.gv);
+        MainActivity ma = (MainActivity) getActivity();
+        assert ma != null;
+
+        GridView gv = view.findViewById(R.id.gv);
         gv.setOnItemClickListener((parent, view1, i, id) -> {
-            cc().setFragmentPagerAdapter(new char[]{MainActivity.CELLS_FRAGMENT}, new int[]{i});
+            MainActivity.onBackState = 2;
+            ma.updateFragmentPagerAdapter(new int[]{i}, new Fragment[]{new CellsFragment()}, 0);
         });
-        gv.setAdapter(new ArrayAdapter<AlbumStruct>(cc(), R.layout.albums_item, Database.albumList) {
+        gv.setAdapter(new ArrayAdapter<AlbumStruct>(ma, R.layout.albums_item, Database.albumList) {
             @NonNull
             @Override
             public View getView(int i, @Nullable View convertView, @NonNull ViewGroup parent) {
@@ -49,16 +51,12 @@ public class AlbumsFragment extends Fragment {
                         .setText(Database.getAlbum(i).galleryName);
 
                 Drawable drawable = Database.getAlbum(i).getMedia(0).thumbnailDrawable;
-                Glide.with(cc())
+                Glide.with(ma)
                         .load(drawable).placeholder(drawable)
                         .into((ImageView) convertView.findViewById(R.id.iv));
 
                 return convertView;
             }
         });
-    }
-
-    private MainActivity cc() {
-        return (MainActivity) getActivity();
     }
 }

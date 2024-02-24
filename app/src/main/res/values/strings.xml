@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">P2A Album</string>
+    <string name="photos">Photos</string>
+    <string name="albums">Albums</string>
 </resources>
