@@ -11,10 +11,9 @@
         android:text="@string/photos"
         android:textSize="60sp" />
 
-    <GridView
-        android:id="@+id/gv"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:numColumns="3" />
+        android:layout_height="match_parent" />
 
 </LinearLayout>

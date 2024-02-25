@@ -2,6 +2,7 @@ package rl.p2a.fragment;
 
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,15 +14,22 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 
 import rl.p2a.Database;
 import rl.p2a.R;
+import rl.p2a.adapter.AlbumsAdapter;
+import rl.p2a.adapter.CellsAdapter;
 import rl.p2a.struct.AlbumStruct;
 import rl.p2a.MainActivity;
 
 public class AlbumsFragment extends Fragment {
+    public static RecyclerView rv;
+    public static Parcelable scrollState = null;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -35,28 +43,21 @@ public class AlbumsFragment extends Fragment {
         MainActivity ma = (MainActivity) getActivity();
         assert ma != null;
 
-        GridView gv = view.findViewById(R.id.gv);
-        gv.setOnItemClickListener((parent, view1, i, id) -> {
-            MainActivity.onBackState = 2;
-            ma.updateFragmentPagerAdapter(new int[]{i}, new Fragment[]{new CellsFragment()}, 0);
-        });
-        gv.setAdapter(new ArrayAdapter<AlbumStruct>(ma, R.layout.albums_item, Database.albumList) {
-            @NonNull
-            @Override
-            public View getView(int i, @Nullable View convertView, @NonNull ViewGroup parent) {
-                if (convertView == null)
-                    convertView = getLayoutInflater().inflate(R.layout.albums_item, parent, false);
+        rv = view.findViewById(R.id.rv);
+        rv.setLayoutManager(new GridLayoutManager(ma, 2));
+        rv.setAdapter(new AlbumsAdapter(ma));
 
-                ((TextView) convertView.findViewById(R.id.tv))
-                        .setText(Database.getAlbum(i).galleryName);
+        assert rv.getLayoutManager() != null;
+        if (scrollState != null)
+            rv.getLayoutManager().onRestoreInstanceState(scrollState);
+    }
 
-                Drawable drawable = Database.getAlbum(i).getMedia(0).thumbnailDrawable;
-                Glide.with(ma)
-                        .load(drawable).placeholder(drawable)
-                        .into((ImageView) convertView.findViewById(R.id.iv));
+    @Override
+    public void onDestroy() {
+        assert rv.getAdapter() != null;
+        ((AlbumsAdapter) rv.getAdapter()).ma = null;
+        rv = null;
 
-                return convertView;
-            }
-        });
+        super.onDestroy();
     }
 }

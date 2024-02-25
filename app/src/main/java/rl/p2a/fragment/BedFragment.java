@@ -1,12 +1,15 @@
 package rl.p2a.fragment;
 
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.VideoView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -15,9 +18,6 @@ import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import com.bumptech.glide.Glide;
-
-import java.io.FileNotFoundException;
-import java.io.InputStream;
 
 import rl.p2a.Database;
 import rl.p2a.MainActivity;
@@ -39,7 +39,7 @@ public class BedFragment extends Fragment {
         assert ma != null;
 
         ViewPager viewPager = view.findViewById(R.id.vp);
-        viewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
             }
@@ -69,23 +69,26 @@ public class BedFragment extends Fragment {
             public Object instantiateItem(@NonNull ViewGroup container, int position) {
                 View itemView = ma.getLayoutInflater().inflate(R.layout.viewpager_item, container, false);
 
+                VideoView videoView = itemView.findViewById(R.id.vv);
                 ImageView imageView = itemView.findViewById(R.id.iv);
 
                 MediaStruct current = Database.getAlbum().getMedia(position);
 
-                Drawable thumbnailDrawable = current.thumbnailDrawable;
-                Glide.with(ma).load(thumbnailDrawable).placeholder(thumbnailDrawable).into(imageView);
+                if (isVideo(current.uri)) {
+                    videoView.setVideoURI(current.uri);
+                    videoView.start();
+                } else {
+                    Drawable thumbnailDrawable = current.thumbnailDrawable;
+                    Glide.with(ma).load(thumbnailDrawable).placeholder(thumbnailDrawable).into(imageView);
 
-
-                new Thread(() -> {
-                    try {
-                        final InputStream is = ma.getContentResolver().openInputStream(current.uri);
-                        final Drawable drawable = Drawable.createFromStream(is, current.uri.toString());
-                        MainActivity.handler.post(() -> Glide.with(ma).load(drawable).placeholder(drawable).into(imageView));
-                    } catch (FileNotFoundException ignored) {
-                    }
-                }).start();
-
+                    new Thread(() -> {
+                        try {
+                            Drawable drawable = Drawable.createFromStream(ma.getContentResolver().openInputStream(current.uri), current.uri.toString());
+                            MainActivity.handler.post(() -> Glide.with(ma).load(drawable).placeholder(drawable).into(imageView));
+                        } catch (Exception ignored) {
+                        }
+                    }).start();
+                }
                 container.addView(itemView);
                 return itemView;
             }
@@ -97,5 +100,9 @@ public class BedFragment extends Fragment {
         });
 
         viewPager.setCurrentItem(Database.iMedia, false);
+    }
+
+    private boolean isVideo(Uri uri) {
+        return uri.toString().contains(MediaStore.Video.Media.EXTERNAL_CONTENT_URI + "/");
     }
 }

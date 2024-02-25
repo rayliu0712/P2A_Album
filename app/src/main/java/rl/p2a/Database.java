@@ -24,9 +24,7 @@ public class Database {
 
     public static void getThumbnailsAndSetLists(MainActivity ma) {
         new Thread(() -> {
-            MainActivity.handler.post(() -> {
-                EzTools.toast(ma, "start");
-            });
+            MainActivity.handler.post(() -> EzTools.toast(ma, "start"));
 
             for (int i = 0; i < 2; i++) {
                 Uri externalContentUri;
@@ -65,6 +63,7 @@ public class Database {
 
                         int finalK = k;
                         MainActivity.handler.post(() -> {
+                            // progress bar or sth...
                         });
 
                     } while (cursor.moveToNext());
@@ -97,7 +96,7 @@ public class Database {
 
     public static AlbumStruct getAlbum(int i) {
         if (i == -1)
-            return new AlbumStruct(allMediaList);
+            return new AlbumStruct("Photos", allMediaList);
         else
             return albumList.get(i);
     }

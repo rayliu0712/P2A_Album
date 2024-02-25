@@ -1,28 +1,26 @@
 package rl.p2a.fragment;
 
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.GridView;
-import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-
-import com.bumptech.glide.Glide;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import rl.p2a.Database;
 import rl.p2a.MainActivity;
 import rl.p2a.R;
-import rl.p2a.struct.MediaStruct;
+import rl.p2a.adapter.CellsAdapter;
 
 public class CellsFragment extends Fragment {
-    private static Parcelable scrollState = null;
+    public static RecyclerView rv;
+    public static Parcelable scrollState = null;
 
     @Nullable
     @Override
@@ -37,34 +35,23 @@ public class CellsFragment extends Fragment {
         MainActivity ma = (MainActivity) getActivity();
         assert ma != null;
 
-        GridView gv = view.findViewById(R.id.gv);
-        gv.setOnItemClickListener((parent, view1, i, id) -> {
-            MainActivity.onBackState++;
+        ((TextView) view.findViewById(R.id.tv)).setText(Database.getAlbum().galleryName);
 
-            // https://stackoverflow.com/questions/29581782/how-to-get-the-scrollposition-in-the-recyclerview-layoutmanager
-            scrollState = gv.onSaveInstanceState();
+        rv = view.findViewById(R.id.rv);
+        rv.setLayoutManager(new GridLayoutManager(ma, 3));
+        rv.setAdapter(new CellsAdapter(ma));
 
-            ma.updateFragmentPagerAdapter(new int[]{i}, new Fragment[]{new BedFragment()}, 0);
-        });
-
-
-        gv.setAdapter(new ArrayAdapter<MediaStruct>(ma, R.layout.cells_item, Database.getAlbum().mediaList) {
-            @NonNull
-            @Override
-            public View getView(int i, @Nullable View convertView, @NonNull ViewGroup parent) {
-                if (convertView == null)
-                    convertView = getLayoutInflater().inflate(R.layout.cells_item, parent, false);
-
-                Drawable drawable = Database.getAlbum().getMedia(i).thumbnailDrawable;
-                Glide.with(ma)
-                        .load(drawable).placeholder(drawable)
-                        .into((ImageView) convertView.findViewById(R.id.iv));
-
-                return convertView;
-            }
-        });
-
+        assert rv.getLayoutManager() != null;
         if (scrollState != null)
-            gv.onRestoreInstanceState(scrollState);
+            rv.getLayoutManager().onRestoreInstanceState(scrollState);
+    }
+
+    @Override
+    public void onDestroy() {
+        assert rv.getAdapter() != null;
+        ((CellsAdapter) rv.getAdapter()).ma = null;
+        rv = null;
+
+        super.onDestroy();
     }
 }

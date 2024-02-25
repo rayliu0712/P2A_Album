@@ -10,10 +10,9 @@
         android:text="@string/albums"
         android:textSize="60sp" />
 
-    <GridView
-        android:id="@+id/gv"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:numColumns="2" />
+        android:layout_height="match_parent" />
 
 </LinearLayout>

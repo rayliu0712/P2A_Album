@@ -10,7 +10,8 @@ public class AlbumStruct {
         this.galleryName = galleryName;
     }
 
-    public AlbumStruct(ArrayList<MediaStruct> mediaList) {
+    public AlbumStruct(String galleryName, ArrayList<MediaStruct> mediaList) {
+        this.galleryName = galleryName;
         this.mediaList = mediaList;
     }
 

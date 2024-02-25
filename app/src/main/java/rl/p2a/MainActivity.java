@@ -17,6 +17,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import java.util.Arrays;
@@ -27,7 +28,7 @@ import rl.p2a.fragment.CellsFragment;
 
 public class MainActivity extends AppCompatActivity {
     public static Handler handler = new Handler();
-    public static int onBackState = 0;
+    public static int backState = 0;
     // 0 = finish()
     // 1 = bed -> cells
     // 2 = album's cells -> albums
@@ -45,24 +46,24 @@ public class MainActivity extends AppCompatActivity {
         getOnBackPressedDispatcher().addCallback(new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                switch (onBackState) {
+                switch (backState) {
                     case 0:
                         finish();
                         break;
                     case 1:
                         updateFragmentPagerAdapter(null, new Fragment[]{new CellsFragment(), new AlbumsFragment()}, 0);
-                        onBackState = 0;
+                        backState = 0;
                         break;
                     case 2:
                         updateFragmentPagerAdapter(new int[]{-1}, new Fragment[]{new CellsFragment(), new AlbumsFragment()}, 1);
-                        onBackState = 0;
+                        backState = 0;
                         break;
                     case 3:
                         updateFragmentPagerAdapter(null, new Fragment[]{new CellsFragment()}, 0);
-                        onBackState--;
+                        backState--;
                         break;
                 }
-                EzTools.log(onBackState);
+                EzTools.log(backState);
             }
         });
 
@@ -74,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
                 return currentFragments[position];
             }
 
-            // https://stackoverflow.com/questions/30080045/fragmentpageradapter-notifydatasetchanged-not-working
+            // https://stackoverflow.com/a/36348078
             // required when updating this adapter
             @Override
             public int getItemPosition(@NonNull Object object) {
