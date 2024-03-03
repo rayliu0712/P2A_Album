@@ -1,5 +1,6 @@
 package rl.p2a.fragment;
 
+import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -7,9 +8,12 @@ import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.VideoView;
+import android.widget.ImageView.ScaleType;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -19,12 +23,40 @@ import androidx.viewpager.widget.ViewPager;
 
 import com.bumptech.glide.Glide;
 
+import rl.p2a.BedPager;
 import rl.p2a.Database;
+import rl.p2a.EzTools;
 import rl.p2a.MainActivity;
 import rl.p2a.R;
 import rl.p2a.struct.MediaStruct;
 
 public class BedFragment extends Fragment {
+    private int restoreSystemUiVisibility;
+    private WindowManager.LayoutParams restoreLayoutParams;
+    private static BedPager viewPager;
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        MainActivity ma = (MainActivity) context;
+
+        restoreSystemUiVisibility = ma.getWindow().getDecorView().getSystemUiVisibility();
+        restoreLayoutParams = ma.getWindow().getAttributes();
+
+        int v = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_FULLSCREEN;
+        ma.getWindow().getDecorView().setSystemUiVisibility(v);
+
+        WindowManager.LayoutParams layoutParams = ma.getWindow().getAttributes();
+        layoutParams.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+        ma.getWindow().setAttributes(layoutParams);
+
+        super.onAttach(context);
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -36,9 +68,9 @@ public class BedFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         MainActivity ma = (MainActivity) getActivity();
-        assert ma != null;
 
-        ViewPager viewPager = view.findViewById(R.id.vp);
+        viewPager = view.findViewById(R.id.vp);
+
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -51,8 +83,10 @@ public class BedFragment extends Fragment {
 
             @Override
             public void onPageScrollStateChanged(int state) {
+                BedPager.pageScrollState = state;
             }
         });
+
         viewPager.setAdapter(new PagerAdapter() {
             @Override
             public int getCount() {
@@ -69,6 +103,9 @@ public class BedFragment extends Fragment {
             public Object instantiateItem(@NonNull ViewGroup container, int position) {
                 View itemView = ma.getLayoutInflater().inflate(R.layout.viewpager_item, container, false);
 
+                EzTools.log(position);
+                ((TextView) itemView.findViewById(R.id.tv)).setText(String.valueOf(position));
+
                 VideoView videoView = itemView.findViewById(R.id.vv);
                 ImageView imageView = itemView.findViewById(R.id.iv);
 
@@ -84,7 +121,9 @@ public class BedFragment extends Fragment {
                     new Thread(() -> {
                         try {
                             Drawable drawable = Drawable.createFromStream(ma.getContentResolver().openInputStream(current.uri), current.uri.toString());
-                            MainActivity.handler.post(() -> Glide.with(ma).load(drawable).placeholder(drawable).into(imageView));
+
+                            // 不加dontTransform()會導致setScaleType()後圖片不清晰
+                            ma.handler.post(() -> Glide.with(ma).load(drawable).placeholder(drawable).dontTransform().into(imageView));
                         } catch (Exception ignored) {
                         }
                     }).start();
@@ -102,7 +141,21 @@ public class BedFragment extends Fragment {
         viewPager.setCurrentItem(Database.iMedia, false);
     }
 
+    @Override
+    public void onDetach() {
+        MainActivity ma = (MainActivity) getActivity();
+        ma.getWindow().getDecorView().setSystemUiVisibility(restoreSystemUiVisibility);
+        ma.getWindow().setAttributes(restoreLayoutParams);
+
+        super.onDetach();
+    }
+
     private boolean isVideo(Uri uri) {
         return uri.toString().contains(MediaStore.Video.Media.EXTERNAL_CONTENT_URI + "/");
+    }
+
+    public static void zoom() {
+        ImageView imageView = viewPager.getFocusedChild().findViewById(R.id.iv);
+        imageView.setScaleType(imageView.getScaleType() == ScaleType.FIT_CENTER ? ScaleType.CENTER_CROP : ScaleType.FIT_CENTER);
     }
 }

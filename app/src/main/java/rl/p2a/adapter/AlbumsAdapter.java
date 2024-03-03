@@ -47,9 +47,8 @@ public class AlbumsAdapter extends RecyclerView.Adapter<AlbumsAdapter.AlbumsHold
     @Override
     public void onBindViewHolder(@NonNull AlbumsHolder holder, int i) {
         holder.itemView.setOnClickListener(v -> {
-            MainActivity.backState = 2;
+            ma.backState = 2;
 
-            assert AlbumsFragment.rv.getLayoutManager() != null;
             AlbumsFragment.scrollState = AlbumsFragment.rv.getLayoutManager().onSaveInstanceState();
 
             ma.updateFragmentPagerAdapter(new int[]{i}, new Fragment[]{new CellsFragment()}, 0);

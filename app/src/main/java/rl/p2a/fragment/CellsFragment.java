@@ -33,7 +33,6 @@ public class CellsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         MainActivity ma = (MainActivity) getActivity();
-        assert ma != null;
 
         ((TextView) view.findViewById(R.id.tv)).setText(Database.getAlbum().galleryName);
 
@@ -41,14 +40,12 @@ public class CellsFragment extends Fragment {
         rv.setLayoutManager(new GridLayoutManager(ma, 3));
         rv.setAdapter(new CellsAdapter(ma));
 
-        assert rv.getLayoutManager() != null;
         if (scrollState != null)
             rv.getLayoutManager().onRestoreInstanceState(scrollState);
     }
 
     @Override
     public void onDestroy() {
-        assert rv.getAdapter() != null;
         ((CellsAdapter) rv.getAdapter()).ma = null;
         rv = null;
 

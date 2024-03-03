@@ -4,7 +4,6 @@ import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -13,7 +12,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 
 import rl.p2a.Database;
-import rl.p2a.EzTools;
 import rl.p2a.MainActivity;
 import rl.p2a.R;
 import rl.p2a.fragment.BedFragment;
@@ -22,8 +20,8 @@ import rl.p2a.fragment.CellsFragment;
 public class CellsAdapter extends RecyclerView.Adapter<CellsAdapter.CellsHolder> {
     public MainActivity ma;
 
-    static class CellsHolder extends RecyclerView.ViewHolder {
-        private final ImageView iv;
+    public static class CellsHolder extends RecyclerView.ViewHolder {
+        public final ImageView iv;
 
         public CellsHolder(@NonNull View itemView) {
             super(itemView);
@@ -46,16 +44,16 @@ public class CellsAdapter extends RecyclerView.Adapter<CellsAdapter.CellsHolder>
     @Override
     public void onBindViewHolder(@NonNull CellsHolder holder, int i) {
         holder.itemView.setOnClickListener(v -> {
-            MainActivity.backState++;
+            ma.backState++;
 
             // https://stackoverflow.com/a/48612294
-            assert CellsFragment.rv.getLayoutManager() != null;
             CellsFragment.scrollState = CellsFragment.rv.getLayoutManager().onSaveInstanceState();
 
             ma.updateFragmentPagerAdapter(new int[]{i}, new Fragment[]{new BedFragment()}, 0);
         });
-
         Drawable drawable = Database.getAlbum().getMedia(i).thumbnailDrawable;
+        if (drawable == null)
+            drawable = ma.getResources().getDrawable(R.drawable.t1);
         Glide.with(ma).load(drawable).placeholder(drawable).into(holder.iv);
     }
 

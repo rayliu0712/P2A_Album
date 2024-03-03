@@ -20,4 +20,11 @@ public class EzTools {
                 .setTitle(title).setMessage(msg).setPositiveButton("OK", listener)
                 .create().show();
     }
+
+    public static void sleep(int millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (Exception ignored) {
+        }
+    }
 }
