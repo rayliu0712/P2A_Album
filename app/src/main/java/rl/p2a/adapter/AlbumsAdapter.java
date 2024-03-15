@@ -19,7 +19,7 @@ import rl.p2a.fragment.AlbumsFragment;
 import rl.p2a.fragment.CellsFragment;
 
 public class AlbumsAdapter extends RecyclerView.Adapter<AlbumsAdapter.AlbumsHolder> {
-    public MainActivity ma;
+    private final MainActivity ma;
 
     static class AlbumsHolder extends RecyclerView.ViewHolder {
         private final TextView tv;
@@ -49,9 +49,11 @@ public class AlbumsAdapter extends RecyclerView.Adapter<AlbumsAdapter.AlbumsHold
         holder.itemView.setOnClickListener(v -> {
             ma.backState = 2;
 
+            // https://stackoverflow.com/a/48612294
             AlbumsFragment.scrollState = AlbumsFragment.rv.getLayoutManager().onSaveInstanceState();
 
-            ma.updateFragmentPagerAdapter(new int[]{i}, new Fragment[]{new CellsFragment()}, 0);
+            Database.iAlbum = holder.getAdapterPosition();
+            ma.updateFragmentPagerAdapter(new Fragment[]{new CellsFragment()}, 0);
         });
 
         holder.tv.setText(Database.getAlbum(i).galleryName);

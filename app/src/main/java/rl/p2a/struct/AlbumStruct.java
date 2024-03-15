@@ -2,6 +2,8 @@ package rl.p2a.struct;
 
 import java.util.ArrayList;
 
+import rl.p2a.Database;
+
 public class AlbumStruct {
     public String galleryName;
     public ArrayList<MediaStruct> mediaList = new ArrayList<>();
@@ -21,5 +23,9 @@ public class AlbumStruct {
 
     public MediaStruct getMedia(int i) {
         return mediaList.get(i);
+    }
+
+    public MediaStruct getMedia() {
+        return mediaList.get(Database.iMedia);
     }
 }

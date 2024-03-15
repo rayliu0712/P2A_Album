@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId = "rl.p2a"
-        minSdk = 28
+        minSdk = 30
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -37,4 +37,5 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 
     implementation("com.github.bumptech.glide:glide:4.16.0")
+    implementation("com.github.chrisbanes:PhotoView:2.3.0")
 }

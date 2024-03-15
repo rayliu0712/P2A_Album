@@ -42,7 +42,6 @@ public class AlbumsFragment extends Fragment {
 
     @Override
     public void onDestroy() {
-        ((AlbumsAdapter) rv.getAdapter()).ma = null;
         rv = null;
 
         super.onDestroy();

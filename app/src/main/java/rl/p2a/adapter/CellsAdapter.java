@@ -18,7 +18,7 @@ import rl.p2a.fragment.BedFragment;
 import rl.p2a.fragment.CellsFragment;
 
 public class CellsAdapter extends RecyclerView.Adapter<CellsAdapter.CellsHolder> {
-    public MainActivity ma;
+    private final MainActivity ma;
 
     public static class CellsHolder extends RecyclerView.ViewHolder {
         public final ImageView iv;
@@ -49,11 +49,15 @@ public class CellsAdapter extends RecyclerView.Adapter<CellsAdapter.CellsHolder>
             // https://stackoverflow.com/a/48612294
             CellsFragment.scrollState = CellsFragment.rv.getLayoutManager().onSaveInstanceState();
 
-            ma.updateFragmentPagerAdapter(new int[]{i}, new Fragment[]{new BedFragment()}, 0);
+            Database.iMedia = holder.getAdapterPosition();
+            ma.updateFragmentPagerAdapter(new Fragment[]{new BedFragment()}, 0);
         });
+
         Drawable drawable = Database.getAlbum().getMedia(i).thumbnailDrawable;
+
         if (drawable == null)
-            drawable = ma.getResources().getDrawable(R.drawable.t1);
+            drawable = ma.getResources().getDrawable(R.drawable.ph);
+
         Glide.with(ma).load(drawable).placeholder(drawable).into(holder.iv);
     }
 

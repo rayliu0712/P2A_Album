@@ -14,12 +14,13 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import rl.p2a.Database;
+import rl.p2a.Tools;
 import rl.p2a.MainActivity;
 import rl.p2a.R;
 import rl.p2a.adapter.CellsAdapter;
 
 public class CellsFragment extends Fragment {
-    public static RecyclerView rv;
+    public static RecyclerView rv = null;
     public static Parcelable scrollState = null;
 
     @Nullable
@@ -31,24 +32,17 @@ public class CellsFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
         MainActivity ma = (MainActivity) getActivity();
 
         ((TextView) view.findViewById(R.id.tv)).setText(Database.getAlbum().galleryName);
 
+        final int spanCount = 7;
         rv = view.findViewById(R.id.rv);
-        rv.setLayoutManager(new GridLayoutManager(ma, 3));
+        rv.setLayoutManager(new GridLayoutManager(ma, spanCount));
         rv.setAdapter(new CellsAdapter(ma));
+
 
         if (scrollState != null)
             rv.getLayoutManager().onRestoreInstanceState(scrollState);
-    }
-
-    @Override
-    public void onDestroy() {
-        ((CellsAdapter) rv.getAdapter()).ma = null;
-        rv = null;
-
-        super.onDestroy();
     }
 }
